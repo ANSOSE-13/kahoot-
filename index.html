@@ -116,6 +116,12 @@
         .btn-small { padding: 8px 15px; font-size: 0.9rem; width: auto; margin: 5px; }
         .btn-link { background: none; border: none; color: var(--blue); text-decoration: underline; cursor: pointer; padding: 0; margin: 0; width: auto; font-size: 0.9rem; box-shadow: none; }
         .btn-link:active { transform: none; }
+        .btn-icon { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0 5px; }
+
+        /* Tabs */
+        .tab-container { display: flex; width: 90%; max-width: 500px; margin-bottom: 10px; }
+        .tab { flex: 1; padding: 10px; text-align: center; background: rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; border-top-left-radius: 4px; border-top-right-radius: 4px; }
+        .tab.active { background: white; color: var(--purple); }
 
         /* Game Grid */
         .game-grid {
@@ -219,6 +225,9 @@
         .login-divider::before { margin-right: .5em; }
         .login-divider::after { margin-left: .5em; }
 
+        /* List Items Actions */
+        .list-actions { display: flex; align-items: center; gap: 5px; }
+
     </style>
 </head>
 <body>
@@ -231,7 +240,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where, getDocs, addDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, where, getDocs, addDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // --- CONFIGURATION ---
     const firebaseConfig = {
@@ -259,6 +268,7 @@
     let playersUnsubscribe = null;
     let currentPlayersList = [];
     let currentQuizQuestions = []; 
+    let hostMenuTab = 'mine'; // 'mine' or 'public'
 
     // Builder State
     let builderTitle = "Nuevo Quiz";
@@ -298,13 +308,26 @@
     // Login Functions
     window.loginGuest = async () => {
         try { await signInAnonymously(auth); } 
-        catch (e) { alert(e.message); }
+        catch (e) { alert("Error al entrar como invitado: " + e.message); }
     };
 
+    // FIXED: Better error handling for domain issues
     window.loginGoogle = async () => {
         const provider = new GoogleAuthProvider();
-        try { await signInWithPopup(auth, provider); } 
-        catch (e) { alert("Error Google: " + e.message); console.error(e); }
+        try { 
+            await signInWithPopup(auth, provider); 
+        } 
+        catch (e) { 
+            console.error("Login Error:", e);
+            if (e.code === 'auth/unauthorized-domain') {
+                const currentDomain = window.location.hostname;
+                alert(`ERROR: Dominio no autorizado.\n\nFirebase bloquea el inicio de sesión de Google desde este sitio web por seguridad.\n\nSOLUCIÓN:\n1. Ve a Firebase Console > Authentication > Settings > Authorized Domains\n2. Añade este dominio: ${currentDomain}\n\nO utiliza el "Modo Invitado" si solo quieres probar.`);
+            } else if (e.code === 'auth/popup-closed-by-user') {
+                // Ignore if user just closed the popup
+            } else {
+                alert("Error Google: " + e.message); 
+            }
+        }
     };
 
     window.loginEmail = async (isRegister) => {
@@ -319,6 +342,7 @@
                 await signInWithEmailAndPassword(auth, email, pass);
             }
         } catch (e) {
+            console.error(e);
             let msg = e.message;
             if(e.code === 'auth/invalid-credential') msg = "Email o contraseña incorrectos";
             if(e.code === 'auth/email-already-in-use') msg = "Este email ya está registrado";
@@ -391,7 +415,7 @@
                 
                 <div class="card flex flex-col center">
                     <button class="btn-green" onclick="window.renderCreateQuiz()">Crear Nuevo Kahoot!</button>
-                    <button class="btn-blue" onclick="window.renderHostMenu()">Ser Anfitrión (Jugar)</button>
+                    <button class="btn-blue" onclick="window.renderHostMenu('mine')">Ser Anfitrión (Jugar)</button>
                     <div style="margin: 15px 0; color: #666; width: 100%; text-align: center; border-bottom: 1px solid #eee; line-height: 0.1em; margin: 20px 0;"><span style="background:#fff; padding:0 10px;">o unirse</span></div>
                     <input type="text" id="pinInput" placeholder="PIN del Juego" maxlength="6">
                     <input type="text" id="nameInput" placeholder="Nickname" maxlength="12">
@@ -403,6 +427,11 @@
 
     // 2. CREATE QUIZ VIEW
     window.renderCreateQuiz = function() {
+        if(currentUser.isAnonymous) {
+            alert("Los invitados no pueden crear Quizzes. Regístrate para guardar tus creaciones.");
+            return renderHome();
+        }
+
         builderQuestions = []; // Reset
         builderTitle = "";
         
@@ -510,7 +539,8 @@
                 title: builderTitle,
                 questions: builderQuestions,
                 creatorId: currentUser.uid,
-                createdAt: new Date()
+                createdAt: new Date(),
+                isPublic: false // Private by default
             });
             alert("¡Quiz Guardado!");
             renderHome();
@@ -522,47 +552,118 @@
         }
     };
 
-    // 3. HOST MENU (SELECT QUIZ)
-    window.renderHostMenu = async function() {
+    // 3. HOST MENU (SELECT QUIZ - UPDATED WITH TABS)
+    window.renderHostMenu = async function(tab = 'mine') {
+        hostMenuTab = tab;
+
+        // Header and Tabs UI
         appDiv.innerHTML = `
             <div class="flex flex-col center h-full">
-                <div class="logo">Elige un Quiz</div>
-                <div class="loader"></div>
+                <div class="logo" onclick="window.renderHome()">Kahoo!</div>
+                
+                <div class="tab-container">
+                    <div class="tab ${tab === 'mine' ? 'active' : ''}" onclick="window.renderHostMenu('mine')">Mis Kahoots</div>
+                    <div class="tab ${tab === 'public' ? 'active' : ''}" onclick="window.renderHostMenu('public')">Comunidad</div>
+                </div>
+
+                <div class="w-full scroll-y flex-col center" id="quizListContainer" style="padding-bottom: 20px; flex:1;">
+                    <div class="loader"></div>
+                </div>
+                
+                <div style="padding:10px;">
+                    <button class="btn-black" style="width: 200px;" onclick="window.renderHome()">Volver</button>
+                </div>
             </div>
         `;
 
+        const container = document.getElementById('quizListContainer');
+
         try {
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'quizzes'));
+            let q;
+            let quizzes = [];
+
+            if(tab === 'mine') {
+                if(currentUser.isAnonymous) {
+                     container.innerHTML = `<div class="text-center" style="color:white">Regístrate para ver tus quizzes.</div>`;
+                     return;
+                }
+                // Fetch My Quizzes
+                q = query(collection(db, 'artifacts', appId, 'public', 'data', 'quizzes'), where("creatorId", "==", currentUser.uid));
+            } else {
+                // Fetch Public Quizzes
+                q = query(collection(db, 'artifacts', appId, 'public', 'data', 'quizzes'), where("isPublic", "==", true));
+            }
+            
             const snapshot = await getDocs(q);
-            const quizzes = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+            quizzes = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
 
-            // Add Demo
-            quizzes.unshift({id: 'demo', ...DEMO_QUIZ});
+            // Add Demo only in Public or both? Let's put in Public/Community
+            if(tab === 'public') quizzes.unshift({id: 'demo', ...DEMO_QUIZ});
 
-            appDiv.innerHTML = `
-                <div class="flex flex-col center h-full">
-                    <div class="logo" onclick="window.renderHome()">Kahoot!</div>
-                    <div class="w-full scroll-y flex-col center" style="padding-bottom: 20px;">
-                        <h3 style="color:white">Selecciona un juego:</h3>
-                        ${quizzes.map(qz => `
-                            <div class="card flex" style="justify-content: space-between; align-items: center; cursor: pointer;" onclick='window.startHost(${JSON.stringify(qz.questions)})'>
-                                <div>
-                                    <h3 style="margin:0;">${qz.title}</h3>
-                                    <small>${qz.questions.length} preguntas</small>
-                                </div>
-                                <button class="btn-blue btn-small">Jugar</button>
-                            </div>
-                        `).join('')}
-                        <button class="btn-black" style="width: 200px; margin-top:20px;" onclick="window.renderHome()">Volver</button>
+            if (quizzes.length === 0) {
+                container.innerHTML = `<div class="text-center" style="color:white; margin-top:20px;">No hay quizzes aquí todavía.</div>`;
+                return;
+            }
+
+            container.innerHTML = quizzes.map(qz => {
+                // Determine buttons based on tab
+                let buttons = `<button class="btn-blue btn-small" onclick='window.startHost(${JSON.stringify(qz.questions)})'>Jugar</button>`;
+                
+                if (tab === 'mine' && qz.id !== 'demo') {
+                    const iconClass = qz.isPublic ? 'fa-globe' : 'fa-lock';
+                    const iconColor = qz.isPublic ? '#26890c' : '#666'; // Green for public
+                    const nextState = !qz.isPublic;
+                    
+                    buttons = `
+                        <div class="list-actions">
+                            <button class="btn-red btn-icon" title="Borrar" onclick="window.deleteQuiz('${qz.id}')"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-black btn-icon" style="background:${iconColor}" title="${qz.isPublic ? 'Hacer Privado' : 'Hacer Público'}" onclick="window.togglePublic('${qz.id}', ${qz.isPublic})"><i class="fa-solid ${iconClass}"></i></button>
+                            <button class="btn-blue btn-small" onclick='window.startHost(${JSON.stringify(qz.questions)})'>Jugar</button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="card flex" style="justify-content: space-between; align-items: center; width: 90%; max-width:500px;">
+                        <div>
+                            <h3 style="margin:0;">${qz.title}</h3>
+                            <small>${qz.questions.length} preguntas</small>
+                            ${tab === 'public' && qz.id !== 'demo' ? '<br><small style="color:#666">De un usuario</small>' : ''}
+                        </div>
+                        ${buttons}
                     </div>
-                </div>
-            `;
+                `;
+            }).join('');
 
         } catch (e) {
             console.error(e);
-            appDiv.innerHTML = `<div class="center h-full text-center" style="color:white">Error cargando quizzes.<br>${e.message}</div>`;
+            container.innerHTML = `<div class="center h-full text-center" style="color:white">Error cargando quizzes.<br>${e.message}</div>`;
         }
     }
+
+    // --- ACTIONS FOR QUIZZES ---
+    
+    window.deleteQuiz = async (quizId) => {
+        if(!confirm("¿Seguro que quieres borrar este Kahoot?")) return;
+        try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', quizId));
+            window.renderHostMenu('mine'); // Refresh
+        } catch (e) {
+            alert("Error al borrar: " + e.message);
+        }
+    };
+
+    window.togglePublic = async (quizId, currentState) => {
+        const newState = !currentState;
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', quizId), {
+                isPublic: newState
+            });
+            window.renderHostMenu('mine'); // Refresh to show icon change
+        } catch (e) {
+            alert("Error al actualizar: " + e.message);
+        }
+    };
 
 
     // 4. LOBBY VIEW
