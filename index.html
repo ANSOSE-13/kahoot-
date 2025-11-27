@@ -665,15 +665,43 @@
         }
     };
 
+    // Nueva función para cancelar la partida desde el lobby
+    window.cancelGame = async () => {
+        if(!confirm("¿Quieres cancelar la partida y volver atrás?")) return;
+
+        // Desuscribirse de los cambios
+        if (gameUnsubscribe) gameUnsubscribe();
+        if (playersUnsubscribe) playersUnsubscribe();
+
+        // Borrar la partida creada para no dejar basura en la BD
+        if (currentGameId) {
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', currentGameId));
+            } catch (e) {
+                console.error("Error borrando partida cancelada:", e);
+            }
+        }
+
+        // Volver al menú
+        window.renderHostMenu(hostMenuTab);
+    };
+
 
     // 4. LOBBY VIEW
     function renderLobby(isHost, pin, players = []) {
         let playersHtml = players.map(p => `<div class="player-chip">${p.name}</div>`).join('');
         
+        let hostControls = `
+            <div class="flex" style="gap: 10px;">
+                <button class="btn-red" style="width: auto; margin: 0; padding: 10px 20px;" onclick="window.cancelGame()">Cancelar</button>
+                <button class="btn-black" style="width: auto; margin: 0; padding: 10px 30px;" onclick="window.launchGame()">Empezar</button>
+            </div>
+        `;
+
         let content = `
             <div class="flex flex-col h-full w-full">
                 <div class="lobby-header">
-                    <div>Únete en <strong>www.kahoo.it</strong> (o aquí)</div>
+                    <div style="color: var(--green); font-size: 1.2rem;">Únete en <strong>ansose-13.github.io/kahoot-/</strong></div>
                     <div class="pin-display">PIN: ${pin}</div>
                 </div>
                 
@@ -683,7 +711,7 @@
 
                 <div class="status-bar flex center" style="background: var(--purple); color: white; padding: 20px;">
                     <div style="font-size: 1.5rem;">${players.length} Jugadores</div>
-                    ${isHost ? `<button class="btn-black" style="width: auto; margin: 0; padding: 10px 30px;" onclick="window.launchGame()">Empezar</button>` : '<div class="loader" style="width: 30px; height: 30px; border-width: 3px; margin: 0;"></div> <span style="margin-left:10px">Ya estás dentro!</span>'}
+                    ${isHost ? hostControls : '<div class="loader" style="width: 30px; height: 30px; border-width: 3px; margin: 0;"></div> <span style="margin-left:10px">Ya estás dentro!</span>'}
                 </div>
             </div>
         `;
