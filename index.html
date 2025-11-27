@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kahoo Clone</title>
+    <title>Kahoot! Clone</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
@@ -18,13 +18,11 @@
             --grey: #f2f2f2;
         }
 
-
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-
 
         body, html {
             margin: 0;
@@ -35,7 +33,7 @@
             overflow: hidden;
         }
 
-
+        /* Utility Classes */
         .hidden { display: none !important; }
         .flex { display: flex; }
         .flex-col { flex-direction: column; }
@@ -43,7 +41,9 @@
         .w-full { width: 100%; }
         .h-full { height: 100%; }
         .text-center { text-align: center; }
+        .scroll-y { overflow-y: auto; }
         
+        /* Main Container */
         #app {
             height: 100%;
             width: 100%;
@@ -54,15 +54,15 @@
             position: relative;
         }
 
-
+        /* UI Elements */
         .logo {
             font-size: 3rem;
             font-weight: 900;
             letter-spacing: 2px;
             margin-bottom: 20px;
             text-shadow: 2px 2px 0px #000;
+            cursor: pointer;
         }
-
 
         .card {
             background: white;
@@ -70,28 +70,25 @@
             border-radius: 4px;
             padding: 20px;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            margin-bottom: 10px;
         }
 
-
-        input {
+        input, select {
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
+            padding: 12px;
+            margin: 8px 0;
             border: 2px solid #ccc;
             border-radius: 4px;
-            font-size: 1.2rem;
-            text-align: center;
+            font-size: 1rem;
             font-weight: bold;
         }
-
 
         input:focus {
             border-color: var(--black);
             outline: none;
         }
-
 
         button {
             width: 100%;
@@ -99,25 +96,28 @@
             margin-top: 10px;
             border: none;
             border-radius: 4px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.1s;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
 
-
         button:active {
             transform: translateY(4px);
             box-shadow: none;
         }
 
-
         .btn-black { background-color: var(--black); color: white; }
         .btn-green { background-color: var(--green); color: white; }
         .btn-blue { background-color: var(--blue); color: white; }
+        .btn-red { background-color: var(--red); color: white; }
+        .btn-google { background-color: white; color: #444; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-small { padding: 8px 15px; font-size: 0.9rem; width: auto; margin: 5px; }
+        .btn-link { background: none; border: none; color: var(--blue); text-decoration: underline; cursor: pointer; padding: 0; margin: 0; width: auto; font-size: 0.9rem; box-shadow: none; }
+        .btn-link:active { transform: none; }
 
-
+        /* Game Grid */
         .game-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -126,7 +126,6 @@
             height: 100%;
             padding: 10px;
         }
-
 
         .answer-btn {
             width: 100%;
@@ -154,19 +153,18 @@
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
 
-
         .bg-red { background-color: var(--red); }
         .bg-blue { background-color: var(--blue); }
         .bg-yellow { background-color: var(--yellow); }
         .bg-green { background-color: var(--green); }
 
-
+        /* Shapes */
         .shape-triangle::before { content: "\f0d8"; font-family: "Font Awesome 6 Free"; font-weight: 900; }
         .shape-diamond::before { content: "\f3a5"; font-family: "Font Awesome 6 Free"; font-weight: 900; transform: rotate(45deg); display:inline-block;}
         .shape-circle::before { content: "\f111"; font-family: "Font Awesome 6 Free"; font-weight: 900; }
         .shape-square::before { content: "\f0c8"; font-family: "Font Awesome 6 Free"; font-weight: 900; }
 
-
+        /* Lobby */
         .lobby-header {
             background: white;
             color: black;
@@ -174,49 +172,16 @@
             text-align: center;
             font-weight: bold;
         }
-        
-        .pin-display {
-            font-size: 3rem;
-            font-weight: 900;
-            margin: 10px 0;
-        }
+        .pin-display { font-size: 3rem; font-weight: 900; margin: 10px 0; }
+        .player-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 20px; overflow-y: auto; max-height: 60vh; }
+        .player-chip { background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 20px; font-weight: bold; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
+        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .player-list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            padding: 20px;
-            overflow-y: auto;
-            max-height: 60vh;
-        }
+        /* Status Bar */
+        .status-bar { display: flex; justify-content: space-between; padding: 10px 20px; background: rgba(0,0,0,0.1); font-weight: bold; }
 
-
-        .player-chip {
-            background: rgba(0,0,0,0.2);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-
-        @keyframes popIn {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background: rgba(0,0,0,0.1);
-            font-weight: bold;
-        }
-
-
+        /* Question Text */
         .question-text {
             background: white;
             color: black;
@@ -229,7 +194,7 @@
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
 
-
+        /* Loading */
         .loader {
             border: 5px solid #f3f3f3;
             border-top: 5px solid var(--purple);
@@ -239,32 +204,36 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Creator Styles */
+        .creator-container { background: white; color: black; width: 100%; height: 100%; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .question-item { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; background: #f9f9f9; }
+        .answer-input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .answer-input-wrapper { display: flex; align-items: center; padding: 5px; border-radius: 4px; }
+        .radio-check { width: 20px; height: 20px; margin-right: 5px; cursor: pointer; }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .correct-msg { background-color: var(--green); padding: 20px; width: 100%; text-align: center; font-size: 2rem; font-weight: bold;}
-        .wrong-msg { background-color: var(--red); padding: 20px; width: 100%; text-align: center; font-size: 2rem; font-weight: bold;}
-
+        /* Login Styles */
+        .login-divider { display: flex; align-items: center; text-align: center; color: #666; margin: 20px 0; width: 100%; }
+        .login-divider::before, .login-divider::after { content: ''; flex: 1; border-bottom: 1px solid #ccc; }
+        .login-divider::before { margin-right: .5em; }
+        .login-divider::after { margin-left: .5em; }
 
     </style>
 </head>
 <body>
 
-
 <div id="app">
+    <!-- Views will be injected here -->
 </div>
 
-
+<!-- Initialization and Logic -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where, getDocs, addDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, query, where, getDocs, addDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-
+    // --- CONFIGURATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyAYB9WdMSnwCuqI5wQ0AYpT8caebfzHkuQ",
         authDomain: "kahoot-e8720.firebaseapp.com",
@@ -275,92 +244,155 @@
         measurementId: "G-XEPK5LWG0H"
     };
 
-
     const appId = 'kahoot-clone-live'; 
     
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-
+    // --- STATE ---
     let currentUser = null;
-    let currentGameId = null;
-    let currentRole = null;
+    let currentGameId = null; 
+    let currentRole = null; 
     let currentPin = null;
     let gameUnsubscribe = null;
     let playersUnsubscribe = null;
-    let localPlayerId = null;
+    let currentPlayersList = [];
+    let currentQuizQuestions = []; 
 
+    // Builder State
+    let builderTitle = "Nuevo Quiz";
+    let builderQuestions = [];
 
-    const QUESTIONS = [
-        {
-            text: "¿De qué color es el caballo blanco de Santiago?",
-            time: 20,
-            answers: [
-                { id: 'r', text: "Negro", color: "red", icon: "triangle" },
-                { id: 'b', text: "Blanco", color: "blue", icon: "diamond" },
-                { id: 'y', text: "Marrón", color: "yellow", icon: "circle" },
-                { id: 'g', text: "Transparente", color: "green", icon: "square" }
-            ],
-            correct: 'b'
-        },
-        {
-            text: "¿Cuál es el planeta más grande del sistema solar?",
-            time: 20,
-            answers: [
-                { id: 'r', text: "Tierra", color: "red", icon: "triangle" },
-                { id: 'b', text: "Marte", color: "blue", icon: "diamond" },
-                { id: 'y', text: "Júpiter", color: "yellow", icon: "circle" },
-                { id: 'g', text: "Saturno", color: "green", icon: "square" }
-            ],
-            correct: 'y'
-        },
-        {
-            text: "¿Cuál es el símbolo químico del Agua?",
-            time: 20,
-            answers: [
-                { id: 'r', text: "H2O", color: "red", icon: "triangle" },
-                { id: 'b', text: "CO2", color: "blue", icon: "diamond" },
-                { id: 'y', text: "O2", color: "yellow", icon: "circle" },
-                { id: 'g', text: "NaCl", color: "green", icon: "square" }
-            ],
-            correct: 'r'
-        }
-    ];
-
-
-    const initAuth = async () => {
-        try {
-            await signInAnonymously(auth);
-        } catch (error) {
-            console.error("Error al iniciar sesión anónima:", error);
-            alert("Error de autenticación: " + error.message);
-        }
+    // --- DEMO QUESTIONS ---
+    const DEMO_QUIZ = {
+        title: "Demo Quiz",
+        questions: [
+            {
+                text: "¿De qué color es el caballo blanco de Santiago?",
+                time: 20,
+                answers: [
+                    { id: 'r', text: "Negro", color: "red", icon: "triangle" },
+                    { id: 'b', text: "Blanco", color: "blue", icon: "diamond" },
+                    { id: 'y', text: "Marrón", color: "yellow", icon: "circle" },
+                    { id: 'g', text: "Transparente", color: "green", icon: "square" }
+                ],
+                correct: 'b'
+            }
+        ]
     };
+
+    // --- AUTH LOGIC ---
     
-    initAuth();
-
-
+    // Listen for auth state changes
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
-            localPlayerId = user.uid;
             renderHome();
+        } else {
+            currentUser = null;
+            renderLogin();
         }
     });
 
+    // Login Functions
+    window.loginGuest = async () => {
+        try { await signInAnonymously(auth); } 
+        catch (e) { alert(e.message); }
+    };
 
+    window.loginGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        try { await signInWithPopup(auth, provider); } 
+        catch (e) { alert("Error Google: " + e.message); console.error(e); }
+    };
+
+    window.loginEmail = async (isRegister) => {
+        const email = document.getElementById('emailInput').value;
+        const pass = document.getElementById('passInput').value;
+        if(!email || !pass) return alert("Introduce email y contraseña");
+
+        try {
+            if(isRegister) {
+                await createUserWithEmailAndPassword(auth, email, pass);
+            } else {
+                await signInWithEmailAndPassword(auth, email, pass);
+            }
+        } catch (e) {
+            let msg = e.message;
+            if(e.code === 'auth/invalid-credential') msg = "Email o contraseña incorrectos";
+            if(e.code === 'auth/email-already-in-use') msg = "Este email ya está registrado";
+            if(e.code === 'auth/weak-password') msg = "La contraseña debe tener al menos 6 caracteres";
+            alert(msg);
+        }
+    };
+
+    window.doLogout = async () => {
+        await signOut(auth);
+        window.location.reload();
+    };
+
+
+    // --- DOM ---
     const appDiv = document.getElementById('app');
 
+    // --- VIEWS ---
 
-    function renderHome() {
+    // 0. LOGIN VIEW
+    window.renderLogin = function() {
         appDiv.innerHTML = `
-            <div class="flex flex-col center h-full">
+            <div class="flex flex-col center h-full scroll-y">
                 <div class="logo">Kahoo!</div>
                 
                 <div class="card flex flex-col center">
-                    <button class="btn-blue" onclick="window.startHost()">Crear Kahoot (Host)</button>
-                    <div style="margin: 15px 0; color: #666;">— O —</div>
+                    <h2 style="margin-top:0;">Bienvenido</h2>
+                    
+                    <button class="btn-google" onclick="window.loginGoogle()">
+                        <!-- SVG INLINE DE GOOGLE PARA MÁXIMA CALIDAD -->
+                        <svg style="width:20px; height:20px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Iniciar con Google
+                    </button>
+
+                    <div class="login-divider">O CON EMAIL</div>
+
+                    <input type="email" id="emailInput" placeholder="Correo electrónico">
+                    <input type="password" id="passInput" placeholder="Contraseña">
+                    
+                    <div class="flex w-full" style="gap:10px;">
+                        <button class="btn-blue" onclick="window.loginEmail(false)">Entrar</button>
+                        <button class="btn-green" onclick="window.loginEmail(true)">Registrarse</button>
+                    </div>
+
+                    <div class="login-divider">O</div>
+
+                    <button class="btn-black" onclick="window.loginGuest()">Jugar como Invitado</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // 1. HOME VIEW
+    window.renderHome = function() {
+        const userDisplay = currentUser.isAnonymous ? "Invitado" : (currentUser.email || currentUser.displayName || "Usuario");
+        
+        appDiv.innerHTML = `
+            <div class="flex flex-col center h-full">
+                <div class="w-full flex" style="justify-content: flex-end; padding: 10px; position: absolute; top:0;">
+                    <span style="margin-right: 10px; font-weight:bold;">Hola, ${userDisplay}</span>
+                    <button class="btn-red btn-small" onclick="window.doLogout()">Salir</button>
+                </div>
+
+                <div class="logo" onclick="window.renderHome()">Kahoot!</div>
+                
+                <div class="card flex flex-col center">
+                    <button class="btn-green" onclick="window.renderCreateQuiz()">Crear Nuevo Kahoot!</button>
+                    <button class="btn-blue" onclick="window.renderHostMenu()">Ser Anfitrión (Jugar)</button>
+                    <div style="margin: 15px 0; color: #666; width: 100%; text-align: center; border-bottom: 1px solid #eee; line-height: 0.1em; margin: 20px 0;"><span style="background:#fff; padding:0 10px;">o unirse</span></div>
                     <input type="text" id="pinInput" placeholder="PIN del Juego" maxlength="6">
                     <input type="text" id="nameInput" placeholder="Nickname" maxlength="12">
                     <button class="btn-black" onclick="window.joinGame()">Entrar</button>
@@ -369,21 +401,184 @@
         `;
     }
 
+    // 2. CREATE QUIZ VIEW
+    window.renderCreateQuiz = function() {
+        builderQuestions = []; // Reset
+        builderTitle = "";
+        
+        updateBuilderUI();
+    }
 
+    function updateBuilderUI() {
+        let qListHtml = builderQuestions.map((q, idx) => `
+            <div class="question-item">
+                <div class="flex" style="justify-content: space-between;">
+                    <strong>P${idx+1}: ${q.text}</strong>
+                    <button class="btn-red btn-small" onclick="window.removeBuilderQuestion(${idx})">X</button>
+                </div>
+                <div style="font-size: 0.8rem; color: #666;">Correcta: ${q.answers.find(a=>a.id === q.correct).text}</div>
+            </div>
+        `).join('');
+
+        appDiv.innerHTML = `
+            <div class="creator-container">
+                <div class="flex center" style="margin-bottom: 20px;">
+                    <h2 style="margin:0;">Creador de Quiz</h2>
+                    <button class="btn-black btn-small" style="margin-left: auto;" onclick="window.renderHome()">Cancelar</button>
+                </div>
+
+                <input type="text" id="quizTitle" placeholder="Título del Quiz" value="${builderTitle}" onchange="window.updateBuilderTitle(this.value)">
+
+                <div style="margin: 20px 0;">
+                    <h3>Preguntas (${builderQuestions.length})</h3>
+                    ${qListHtml}
+                </div>
+
+                <div class="card w-full" style="background: #eee; align-self: center;">
+                    <h4>Añadir Pregunta</h4>
+                    <input type="text" id="newQText" placeholder="¿Cuál es la pregunta?">
+                    
+                    <div class="answer-input-group">
+                        <div class="answer-input-wrapper bg-red" style="color:white">
+                            <input type="radio" name="correctAnswer" value="r" class="radio-check" checked>
+                            <input type="text" id="ansR" placeholder="Respuesta Roja" style="margin:0; border:none;">
+                        </div>
+                        <div class="answer-input-wrapper bg-blue" style="color:white">
+                            <input type="radio" name="correctAnswer" value="b" class="radio-check">
+                            <input type="text" id="ansB" placeholder="Respuesta Azul" style="margin:0; border:none;">
+                        </div>
+                        <div class="answer-input-wrapper bg-yellow" style="color:white">
+                            <input type="radio" name="correctAnswer" value="y" class="radio-check">
+                            <input type="text" id="ansY" placeholder="Respuesta Amarilla" style="margin:0; border:none;">
+                        </div>
+                        <div class="answer-input-wrapper bg-green" style="color:white">
+                            <input type="radio" name="correctAnswer" value="g" class="radio-check">
+                            <input type="text" id="ansG" placeholder="Respuesta Verde" style="margin:0; border:none;">
+                        </div>
+                    </div>
+
+                    <button class="btn-blue" onclick="window.addBuilderQuestion()">Añadir Pregunta</button>
+                </div>
+
+                <button class="btn-green" style="margin-top: 20px;" onclick="window.saveQuizToFirestore()">GUARDAR QUIZ</button>
+            </div>
+        `;
+    }
+
+    window.updateBuilderTitle = (val) => builderTitle = val;
+
+    window.removeBuilderQuestion = (idx) => {
+        builderQuestions.splice(idx, 1);
+        updateBuilderUI();
+    };
+
+    window.addBuilderQuestion = () => {
+        const text = document.getElementById('newQText').value;
+        const r = document.getElementById('ansR').value;
+        const b = document.getElementById('ansB').value;
+        const y = document.getElementById('ansY').value;
+        const g = document.getElementById('ansG').value;
+        
+        if(!text || !r || !b || !y || !g) return alert("Rellena todos los campos");
+
+        const correct = document.querySelector('input[name="correctAnswer"]:checked').value;
+
+        builderQuestions.push({
+            text: text,
+            time: 20,
+            answers: [
+                { id: 'r', text: r, color: "red", icon: "triangle" },
+                { id: 'b', text: b, color: "blue", icon: "diamond" },
+                { id: 'y', text: y, color: "yellow", icon: "circle" },
+                { id: 'g', text: g, color: "green", icon: "square" }
+            ],
+            correct: correct
+        });
+        
+        updateBuilderUI();
+    };
+
+    window.saveQuizToFirestore = async () => {
+        if(!builderTitle || builderQuestions.length === 0) return alert("El quiz necesita título y al menos una pregunta.");
+
+        const btn = document.querySelector('.btn-green');
+        btn.innerText = "Guardando...";
+        btn.disabled = true;
+
+        try {
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'quizzes'), {
+                title: builderTitle,
+                questions: builderQuestions,
+                creatorId: currentUser.uid,
+                createdAt: new Date()
+            });
+            alert("¡Quiz Guardado!");
+            renderHome();
+        } catch (e) {
+            console.error(e);
+            alert("Error al guardar: " + e.message);
+            btn.innerText = "GUARDAR QUIZ";
+            btn.disabled = false;
+        }
+    };
+
+    // 3. HOST MENU (SELECT QUIZ)
+    window.renderHostMenu = async function() {
+        appDiv.innerHTML = `
+            <div class="flex flex-col center h-full">
+                <div class="logo">Elige un Quiz</div>
+                <div class="loader"></div>
+            </div>
+        `;
+
+        try {
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'quizzes'));
+            const snapshot = await getDocs(q);
+            const quizzes = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+
+            // Add Demo
+            quizzes.unshift({id: 'demo', ...DEMO_QUIZ});
+
+            appDiv.innerHTML = `
+                <div class="flex flex-col center h-full">
+                    <div class="logo" onclick="window.renderHome()">Kahoot!</div>
+                    <div class="w-full scroll-y flex-col center" style="padding-bottom: 20px;">
+                        <h3 style="color:white">Selecciona un juego:</h3>
+                        ${quizzes.map(qz => `
+                            <div class="card flex" style="justify-content: space-between; align-items: center; cursor: pointer;" onclick='window.startHost(${JSON.stringify(qz.questions)})'>
+                                <div>
+                                    <h3 style="margin:0;">${qz.title}</h3>
+                                    <small>${qz.questions.length} preguntas</small>
+                                </div>
+                                <button class="btn-blue btn-small">Jugar</button>
+                            </div>
+                        `).join('')}
+                        <button class="btn-black" style="width: 200px; margin-top:20px;" onclick="window.renderHome()">Volver</button>
+                    </div>
+                </div>
+            `;
+
+        } catch (e) {
+            console.error(e);
+            appDiv.innerHTML = `<div class="center h-full text-center" style="color:white">Error cargando quizzes.<br>${e.message}</div>`;
+        }
+    }
+
+
+    // 4. LOBBY VIEW
     function renderLobby(isHost, pin, players = []) {
         let playersHtml = players.map(p => `<div class="player-chip">${p.name}</div>`).join('');
         
         let content = `
             <div class="flex flex-col h-full w-full">
                 <div class="lobby-header">
-                    <div>Únete en <strong>www.kahoo.it</strong></div>
+                    <div>Únete en <strong>www.kahoo.it</strong> (o aquí)</div>
                     <div class="pin-display">PIN: ${pin}</div>
                 </div>
                 
                 <div class="player-list flex-1">
                     ${players.length === 0 ? '<div style="opacity:0.6">Esperando jugadores...</div>' : playersHtml}
                 </div>
-
 
                 <div class="status-bar flex center" style="background: var(--purple); color: white; padding: 20px;">
                     <div style="font-size: 1.5rem;">${players.length} Jugadores</div>
@@ -394,7 +589,7 @@
         appDiv.innerHTML = content;
     }
 
-
+    // 5. QUESTION VIEWS
     function renderQuestionHost(question, timeRem, currentIdx, total) {
         let answersHtml = `
             <div class="game-grid w-full" style="height: 50%;">
@@ -407,7 +602,6 @@
             </div>
         `;
 
-
         appDiv.innerHTML = `
             <div class="flex flex-col h-full w-full center" style="justify-content: space-between;">
                 <div class="w-full flex" style="justify-content: space-between; padding: 10px;">
@@ -415,20 +609,11 @@
                     <div class="card" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: var(--purple);">${timeRem}</div>
                 </div>
 
-
                 <div class="question-text">${question.text}</div>
-
-
-                <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5);">
-                    [Imagen de la pregunta aquí]
-                </div>
-
-
                 ${answersHtml}
             </div>
         `;
     }
-
 
     function renderQuestionPlayer() {
         appDiv.innerHTML = `
@@ -441,7 +626,6 @@
         `;
     }
 
-
     function renderWaiting(msg = "Respuesta enviada") {
         appDiv.innerHTML = `
             <div class="flex flex-col center h-full bg-purple">
@@ -451,7 +635,6 @@
             </div>
         `;
     }
-
 
     function renderPlayerResult(isCorrect, score) {
         appDiv.innerHTML = `
@@ -468,10 +651,8 @@
         `;
     }
 
-
     function renderScoreboard(players) {
         const sorted = [...players].sort((a, b) => b.score - a.score).slice(0, 5);
-        
         appDiv.innerHTML = `
             <div class="flex flex-col center h-full">
                 <h1 class="logo">Marcador</h1>
@@ -488,12 +669,9 @@
         `;
     }
 
-
     function renderPodium(players) {
          const sorted = [...players].sort((a, b) => b.score - a.score);
          const winner = sorted[0] || {name: 'Nadie', score: 0};
-
-
          appDiv.innerHTML = `
             <div class="flex flex-col center h-full">
                 <h1 class="logo">PODIO</h1>
@@ -506,23 +684,26 @@
                     <h2 class="text-center">Ganador: ${winner.name}</h2>
                     <p class="text-center">${winner.score} puntos</p>
                 </div>
-                <button class="btn-black" style="width: 200px; margin-top: 20px;" onclick="location.reload()">Inicio</button>
+                <button class="btn-black" style="width: 200px; margin-top: 20px;" onclick="window.renderHome()">Inicio</button>
             </div>
          `;
     }
 
-
+    // --- FIRESTORE HELPERS ---
     const getGameRef = (gameId) => doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', gameId);
     const getPlayersRef = (gameId) => collection(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', gameId, 'players');
 
-
-    window.startHost = async () => {
+    // --- HOST LOGIC ---
+    
+    window.startHost = async (selectedQuestions) => {
         if (!currentUser) return;
         currentRole = 'host';
+        currentQuizQuestions = selectedQuestions; 
         
         const pin = Math.floor(100000 + Math.random() * 900000).toString();
         currentPin = pin;
 
+        appDiv.innerHTML = '<div class="flex center h-full"><div class="loader"></div></div>';
 
         const gameDoc = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'kahoot_games'), {
             pin: pin,
@@ -530,41 +711,35 @@
             status: 'lobby',
             currentQuestionIndex: 0,
             createdAt: new Date(),
-            timer: 0
+            timer: 0,
+            quizData: selectedQuestions 
         });
-
 
         currentGameId = gameDoc.id;
 
+        gameUnsubscribe = onSnapshot(getGameRef(currentGameId), (doc) => {
+            const gameData = doc.data();
+            handleGameStateChange(gameData);
+        });
 
         playersUnsubscribe = onSnapshot(getPlayersRef(currentGameId), (snapshot) => {
-            const players = snapshot.docs.map(d => d.data());
-            renderLobby(true, pin, players);
+            currentPlayersList = snapshot.docs.map(d => d.data());
+            if(document.querySelector('.lobby-header')) renderLobby(true, pin, currentPlayersList);
         });
     };
-
 
     window.launchGame = async () => {
-        await updateDoc(getGameRef(currentGameId), {
-            status: 'question_intro'
-        });
-
-
-        setTimeout(async () => {
-            await startQuestion(0);
-        }, 2000);
+        await updateDoc(getGameRef(currentGameId), { status: 'question_intro' });
+        setTimeout(async () => { await startQuestion(0); }, 2000);
     };
 
-
     async function startQuestion(index) {
-        const q = QUESTIONS[index];
-        
+        const q = currentQuizQuestions[index];
         await updateDoc(getGameRef(currentGameId), {
             status: 'question',
             currentQuestionIndex: index,
             timer: q.time
         });
-
 
         let timeLeft = q.time;
         const timerInterval = setInterval(async () => {
@@ -579,15 +754,12 @@
         }, 1000);
     }
 
-
     async function endQuestion() {
         const qIdxDoc = await getDoc(getGameRef(currentGameId));
         const qIdx = qIdxDoc.data().currentQuestionIndex;
-        const correctAns = QUESTIONS[qIdx].correct;
-
+        const correctAns = currentQuizQuestions[qIdx].correct;
 
         const playersSnap = await getDocs(getPlayersRef(currentGameId));
-        
         const updates = [];
         playersSnap.forEach(pDoc => {
             const pData = pDoc.data();
@@ -596,53 +768,40 @@
             }
         });
 
-
         await Promise.all(updates);
-
-
-        await updateDoc(getGameRef(currentGameId), {
-            status: 'results'
-        });
+        await updateDoc(getGameRef(currentGameId), { status: 'results' });
     }
-
 
     window.nextLevel = async () => {
         const docSnap = await getDoc(getGameRef(currentGameId));
         const currentIdx = docSnap.data().currentQuestionIndex;
 
-
-        if (currentIdx + 1 < QUESTIONS.length) {
+        if (currentIdx + 1 < currentQuizQuestions.length) {
             await startQuestion(currentIdx + 1);
         } else {
-            await updateDoc(getGameRef(currentGameId), {
-                status: 'podium'
-            });
+            await updateDoc(getGameRef(currentGameId), { status: 'podium' });
         }
     };
 
+    // --- PLAYER LOGIC ---
 
     window.joinGame = async () => {
         const pin = document.getElementById('pinInput').value;
         const name = document.getElementById('nameInput').value;
-
-
         if (!pin || !name) return alert("Rellena todos los campos");
-
 
         const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'kahoot_games'), where('pin', '==', pin));
         const querySnapshot = await getDocs(q);
 
-
-        if (querySnapshot.empty) {
-            return alert("Juego no encontrado");
-        }
-
+        if (querySnapshot.empty) return alert("Juego no encontrado");
 
         const gameDoc = querySnapshot.docs[0];
+        const gameData = gameDoc.data();
         currentGameId = gameDoc.id;
         currentRole = 'player';
         currentPin = pin;
-
+        
+        if(gameData.quizData) currentQuizQuestions = gameData.quizData; 
 
         const playerRef = doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', currentGameId, 'players', currentUser.uid);
         await setDoc(playerRef, {
@@ -652,39 +811,46 @@
             lastQuestionIndex: -1
         });
 
-
         gameUnsubscribe = onSnapshot(getGameRef(currentGameId), (doc) => {
-            const gameData = doc.data();
-            handleGameStateChange(gameData);
+            const gd = doc.data();
+            if(gd.quizData && currentQuizQuestions.length === 0) currentQuizQuestions = gd.quizData;
+            handleGameStateChange(gd);
         });
     };
-
 
     async function handleGameStateChange(game) {
         if (!game) return;
 
-
-        const myPlayerDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', currentGameId, 'players', currentUser.uid));
-        const myData = myPlayerDoc.exists() ? myPlayerDoc.data() : { score: 0 };
-
+        let myData = { score: 0, lastQuestionIndex: -1, lastAnswer: null };
+        if (currentRole === 'player') {
+             const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', currentGameId, 'players', currentUser.uid);
+             const pSnap = await getDoc(playerDocRef);
+             if (pSnap.exists()) myData = pSnap.data();
+        }
 
         if (game.status === 'lobby') {
-             if (!playersUnsubscribe) {
-                playersUnsubscribe = onSnapshot(getPlayersRef(currentGameId), (s) => {
-                    renderLobby(false, currentPin, s.docs.map(d=>d.data()));
-                });
+             if (currentRole === 'host') {
+                 renderLobby(true, currentPin, currentPlayersList);
+             } else {
+                 if (!playersUnsubscribe) {
+                    playersUnsubscribe = onSnapshot(getPlayersRef(currentGameId), (s) => {
+                        currentPlayersList = s.docs.map(d=>d.data());
+                        renderLobby(false, currentPin, currentPlayersList);
+                    });
+                 }
+                 renderLobby(false, currentPin, currentPlayersList);
              }
         } else if (game.status === 'question_intro') {
-            renderWaiting("¡Prepárate!");
+            currentRole === 'host' ? 
+                appDiv.innerHTML = `<div class="flex flex-col center h-full"><div class="logo">¡Atentos!</div><div class="loader"></div></div>` : 
+                renderWaiting("¡Prepárate!");
         } else if (game.status === 'question') {
-            if (myData.lastQuestionIndex === game.currentQuestionIndex) {
+            if (currentRole === 'player' && myData.lastQuestionIndex === game.currentQuestionIndex) {
                 renderWaiting("Respuesta enviada");
             } else {
-                if (currentRole === 'host') {
-                    renderQuestionHost(QUESTIONS[game.currentQuestionIndex], game.timer, game.currentQuestionIndex, QUESTIONS.length);
-                } else {
+                currentRole === 'host' ? 
+                    renderQuestionHost(currentQuizQuestions[game.currentQuestionIndex], game.timer, game.currentQuestionIndex, currentQuizQuestions.length) : 
                     renderQuestionPlayer();
-                }
             }
         } else if (game.status === 'results') {
             if (currentRole === 'host') {
@@ -692,7 +858,7 @@
                 const players = pSnap.docs.map(d => d.data());
                 renderScoreboard(players);
             } else {
-                const correctAns = QUESTIONS[game.currentQuestionIndex].correct;
+                const correctAns = currentQuizQuestions[game.currentQuestionIndex].correct;
                 const isCorrect = myData.lastAnswer === correctAns && myData.lastQuestionIndex === game.currentQuestionIndex;
                 renderPlayerResult(isCorrect, myData.score);
             }
@@ -703,21 +869,16 @@
         }
     }
 
-
     window.submitAnswer = async (answerId) => {
-        renderWaiting();
-        
+        renderWaiting(); 
         const gDoc = await getDoc(getGameRef(currentGameId));
         const qIdx = gDoc.data().currentQuestionIndex;
-
-
         const playerRef = doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', currentGameId, 'players', currentUser.uid);
         await updateDoc(playerRef, {
             lastAnswer: answerId,
             lastQuestionIndex: qIdx
         });
     };
-
 
 </script>
 </body>
