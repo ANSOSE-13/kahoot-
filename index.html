@@ -4,23 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kahoot! Clone</title>
+    <!-- Importamos una fuente más moderna y geométrica -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         :root {
             --purple: #46178f;
-            --light-purple: #864cbf;
+            --dark-purple: #250950;
             --blue: #1368ce;
             --red: #e21b3c;
             --yellow: #ffa602;
             --green: #26890c;
             --white: #ffffff;
+            --off-white: #f8f8f8;
             --black: #333333;
-            --grey: #f2f2f2;
+            --shadow-btn: rgba(0,0,0,0.25);
         }
 
         * {
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Montserrat', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -29,7 +32,7 @@
             padding: 0;
             height: 100%;
             width: 100%;
-            background-color: var(--grey);
+            background-color: var(--dark-purple);
             overflow: hidden;
         }
 
@@ -43,94 +46,162 @@
         .text-center { text-align: center; }
         .scroll-y { overflow-y: auto; }
         
-        /* Main Container */
+        /* Main Container with Background Pattern */
         #app {
             height: 100%;
             width: 100%;
-            background-color: var(--purple);
+            background: linear-gradient(135deg, var(--purple) 0%, var(--dark-purple) 100%);
             color: var(--white);
             display: flex;
             flex-direction: column;
             position: relative;
+            z-index: 1;
+        }
+
+        /* Background Shapes (Decoration) */
+        #app::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255,255,255,0.05) 20px, transparent 21px),
+                radial-gradient(circle at 90% 80%, rgba(255,255,255,0.05) 40px, transparent 41px);
+            background-size: 100% 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Fade In Animation for Views */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* UI Elements */
         .logo {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 900;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 0px #000;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
             cursor: pointer;
+            font-style: italic;
         }
 
         .card {
-            background: white;
-            color: black;
-            border-radius: 4px;
-            padding: 20px;
+            background: var(--white);
+            color: var(--black);
+            border-radius: 8px;
+            padding: 30px 25px;
             width: 90%;
-            max-width: 500px;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-            margin-bottom: 10px;
+            max-width: 480px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            margin-bottom: 15px;
+            position: relative;
         }
 
         input, select {
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: var(--off-white);
         }
 
         input:focus {
             border-color: var(--black);
             outline: none;
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(0,0,0,0.05);
         }
 
         button {
             width: 100%;
-            padding: 15px;
-            margin-top: 10px;
+            padding: 16px;
+            margin-top: 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 1.1rem;
-            font-weight: bold;
+            font-weight: 800;
+            text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.1s;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s, filter 0.2s;
+            box-shadow: 0 6px 0 var(--shadow-btn);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 var(--shadow-btn);
         }
 
         button:active {
             transform: translateY(4px);
-            box-shadow: none;
+            box-shadow: 0 0 0 var(--shadow-btn);
         }
 
         .btn-black { background-color: var(--black); color: white; }
         .btn-green { background-color: var(--green); color: white; }
         .btn-blue { background-color: var(--blue); color: white; }
         .btn-red { background-color: var(--red); color: white; }
-        .btn-google { background-color: white; color: #444; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-small { padding: 8px 15px; font-size: 0.9rem; width: auto; margin: 5px; }
-        .btn-link { background: none; border: none; color: var(--blue); text-decoration: underline; cursor: pointer; padding: 0; margin: 0; width: auto; font-size: 0.9rem; box-shadow: none; }
-        .btn-link:active { transform: none; }
-        .btn-icon { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0 5px; }
+        .btn-google { 
+            background-color: white; 
+            color: #444; 
+            border: 2px solid #e0e0e0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px;
+            text-transform: none; /* Google brand guideline */
+            box-shadow: 0 4px 0 #ccc;
+        }
+        .btn-google:hover { filter: none; background-color: #f9f9f9; }
+        .btn-google:active { box-shadow: none; transform: translateY(4px); }
+
+        .btn-small { padding: 8px 16px; font-size: 0.85rem; width: auto; margin: 0; box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
+        
+        .btn-icon { 
+            width: 44px; height: 44px; 
+            padding: 0; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 8px;
+            margin-left: 8px;
+        }
 
         /* Tabs */
-        .tab-container { display: flex; width: 90%; max-width: 500px; margin-bottom: 10px; }
-        .tab { flex: 1; padding: 10px; text-align: center; background: rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; border-top-left-radius: 4px; border-top-right-radius: 4px; }
-        .tab.active { background: white; color: var(--purple); }
+        .tab-container { display: flex; width: 90%; max-width: 480px; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 4px; }
+        .tab { 
+            flex: 1; 
+            padding: 12px; 
+            text-align: center; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            color: rgba(255,255,255,0.7);
+            transition: all 0.2s;
+        }
+        .tab.active { background: white; color: var(--purple); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         /* Game Grid */
         .game-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
             height: 100%;
-            padding: 10px;
+            padding: 12px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .answer-btn {
@@ -141,12 +212,14 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: white;
             cursor: pointer;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-            border-radius: 4px;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            border-radius: 8px;
+            transition: transform 0.1s;
         }
+        .answer-btn:active { transform: scale(0.98); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
         
         .host-answer-card {
             display: flex;
@@ -155,8 +228,9 @@
             font-size: 1.5rem;
             font-weight: bold;
             color: white;
-            border-radius: 4px;
+            border-radius: 8px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
         }
 
         .bg-red { background-color: var(--red); }
@@ -174,36 +248,59 @@
         .lobby-header {
             background: white;
             color: black;
-            padding: 10px;
+            padding: 15px 20px;
             text-align: center;
             font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 10;
         }
-        .pin-display { font-size: 3rem; font-weight: 900; margin: 10px 0; }
-        .player-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 20px; overflow-y: auto; max-height: 60vh; }
-        .player-chip { background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 20px; font-weight: bold; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .pin-display { font-size: 3.5rem; font-weight: 900; margin: 5px 0; color: var(--black); letter-spacing: 3px; }
+        .player-list { 
+            display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start;
+            gap: 12px; padding: 30px; overflow-y: auto; max-height: 60vh; 
+        }
+        .player-chip { 
+            background: rgba(0,0,0,0.3); 
+            color: white;
+            padding: 12px 24px; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            font-size: 1.2rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
 
         @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* Status Bar */
-        .status-bar { display: flex; justify-content: space-between; padding: 10px 20px; background: rgba(0,0,0,0.1); font-weight: bold; }
+        .status-bar { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 25px; 
+            background: rgba(0,0,0,0.25); 
+            backdrop-filter: blur(5px);
+            font-weight: bold; 
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
 
         /* Question Text */
         .question-text {
             background: white;
             color: black;
-            padding: 20px;
+            padding: 30px;
             margin: 20px;
-            border-radius: 4px;
-            font-size: 1.5rem;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 1.8rem;
+            font-weight: 800;
             text-align: center;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 90%;
         }
 
         /* Loading */
         .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--purple);
+            border: 6px solid rgba(255,255,255,0.2);
+            border-top: 6px solid var(--white);
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -213,20 +310,29 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Creator Styles */
-        .creator-container { background: white; color: black; width: 100%; height: 100%; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .question-item { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; background: #f9f9f9; }
-        .answer-input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .answer-input-wrapper { display: flex; align-items: center; padding: 5px; border-radius: 4px; }
-        .radio-check { width: 20px; height: 20px; margin-right: 5px; cursor: pointer; }
+        .creator-container { background: #f4f4f4; color: black; width: 100%; height: 100%; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .question-item { 
+            background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--purple);
+        }
+        .answer-input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .answer-input-wrapper { display: flex; align-items: center; padding: 8px; border-radius: 6px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .radio-check { width: 24px; height: 24px; margin-right: 10px; cursor: pointer; accent-color: white; }
 
         /* Login Styles */
-        .login-divider { display: flex; align-items: center; text-align: center; color: #666; margin: 20px 0; width: 100%; }
-        .login-divider::before, .login-divider::after { content: ''; flex: 1; border-bottom: 1px solid #ccc; }
-        .login-divider::before { margin-right: .5em; }
-        .login-divider::after { margin-left: .5em; }
+        .login-divider { display: flex; align-items: center; text-align: center; color: #888; margin: 25px 0; width: 100%; font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .login-divider::before, .login-divider::after { content: ''; flex: 1; border-bottom: 1px solid #ddd; }
+        .login-divider::before { margin-right: 1em; }
+        .login-divider::after { margin-left: 1em; }
 
         /* List Items Actions */
-        .list-actions { display: flex; align-items: center; gap: 5px; }
+        .list-actions { display: flex; align-items: center; }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 1000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; text-align: center; color: black; max-width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-btns { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
+        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     </style>
 </head>
@@ -292,9 +398,33 @@
         ]
     };
 
+    // --- HELPER: CUSTOM MODAL ---
+    window.showConfirmModal = (msg, onConfirm) => {
+        const div = document.createElement('div');
+        div.className = 'modal-overlay';
+        div.innerHTML = `
+            <div class="modal-content">
+                <h3 style="margin-top:0; color:var(--black);">¿Estás seguro?</h3>
+                <p style="color:#666; margin-bottom: 20px;">${msg}</p>
+                <div class="modal-btns">
+                    <button class="btn-black btn-small" id="modal-cancel-btn" style="width: 80px;">No</button>
+                    <button class="btn-red btn-small" id="modal-confirm-btn" style="width: 80px;">Sí</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(div);
+        
+        setTimeout(() => {
+            document.getElementById('modal-cancel-btn').onclick = () => div.remove();
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                div.remove();
+                onConfirm();
+            };
+        }, 10);
+    };
+
+
     // --- AUTH LOGIC ---
-    
-    // Listen for auth state changes
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
@@ -305,13 +435,11 @@
         }
     });
 
-    // Login Functions
     window.loginGuest = async () => {
         try { await signInAnonymously(auth); } 
         catch (e) { alert("Error al entrar como invitado: " + e.message); }
     };
 
-    // FIXED: Better error handling for domain issues
     window.loginGoogle = async () => {
         const provider = new GoogleAuthProvider();
         try { 
@@ -323,7 +451,6 @@
                 const currentDomain = window.location.hostname;
                 alert(`ERROR: Dominio no autorizado.\n\nFirebase bloquea el inicio de sesión de Google desde este sitio web por seguridad.\n\nSOLUCIÓN:\n1. Ve a Firebase Console > Authentication > Settings > Authorized Domains\n2. Añade este dominio: ${currentDomain}\n\nO utiliza el "Modo Invitado" si solo quieres probar.`);
             } else if (e.code === 'auth/popup-closed-by-user') {
-                // Ignore if user just closed the popup
             } else {
                 alert("Error Google: " + e.message); 
             }
@@ -365,14 +492,13 @@
     // 0. LOGIN VIEW
     window.renderLogin = function() {
         appDiv.innerHTML = `
-            <div class="flex flex-col center h-full scroll-y">
-                <div class="logo">Kahoot!</div>
+            <div class="flex flex-col center h-full scroll-y fade-in">
+                <div class="logo">Kahoo!</div>
                 
                 <div class="card flex flex-col center">
-                    <h2 style="margin-top:0;">Bienvenido</h2>
+                    <h2 style="margin-top:0; font-weight:800;">Bienvenido</h2>
                     
                     <button class="btn-google" onclick="window.loginGoogle()">
-                        <!-- SVG INLINE DE GOOGLE PARA MÁXIMA CALIDAD -->
                         <svg style="width:20px; height:20px;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -382,17 +508,17 @@
                         Iniciar con Google
                     </button>
 
-                    <div class="login-divider">O CON EMAIL</div>
+                    <div class="login-divider">o con email</div>
 
                     <input type="email" id="emailInput" placeholder="Correo electrónico">
                     <input type="password" id="passInput" placeholder="Contraseña">
                     
-                    <div class="flex w-full" style="gap:10px;">
+                    <div class="flex w-full" style="gap:15px; margin-top:5px;">
                         <button class="btn-blue" onclick="window.loginEmail(false)">Entrar</button>
-                        <button class="btn-green" onclick="window.loginEmail(true)">Registrarse</button>
+                        <button class="btn-green" onclick="window.loginEmail(true)">Registro</button>
                     </div>
 
-                    <div class="login-divider">O</div>
+                    <div class="login-divider">o</div>
 
                     <button class="btn-black" onclick="window.loginGuest()">Jugar como Invitado</button>
                 </div>
@@ -405,20 +531,22 @@
         const userDisplay = currentUser.isAnonymous ? "Invitado" : (currentUser.email || currentUser.displayName || "Usuario");
         
         appDiv.innerHTML = `
-            <div class="flex flex-col center h-full">
-                <div class="w-full flex" style="justify-content: flex-end; padding: 10px; position: absolute; top:0;">
-                    <span style="margin-right: 10px; font-weight:bold;">Hola, ${userDisplay}</span>
+            <div class="flex flex-col center h-full fade-in">
+                <div class="w-full flex" style="justify-content: flex-end; padding: 20px; position: absolute; top:0; z-index:10;">
+                    <span style="margin-right: 15px; font-weight:bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Hola, ${userDisplay}</span>
                     <button class="btn-red btn-small" onclick="window.doLogout()">Salir</button>
                 </div>
 
                 <div class="logo" onclick="window.renderHome()">Kahoot!</div>
                 
-                <div class="card flex flex-col center">
-                    <button class="btn-green" onclick="window.renderCreateQuiz()">Crear Nuevo Kahoot!</button>
-                    <button class="btn-blue" onclick="window.renderHostMenu('mine')">Ser Anfitrión (Jugar)</button>
-                    <div style="margin: 15px 0; color: #666; width: 100%; text-align: center; border-bottom: 1px solid #eee; line-height: 0.1em; margin: 20px 0;"><span style="background:#fff; padding:0 10px;">o unirse</span></div>
-                    <input type="text" id="pinInput" placeholder="PIN del Juego" maxlength="6">
-                    <input type="text" id="nameInput" placeholder="Nickname" maxlength="12">
+                <div class="card flex flex-col center" style="padding-top: 40px; padding-bottom: 40px;">
+                    <button class="btn-green" style="font-size: 1.2rem; padding: 20px;" onclick="window.renderCreateQuiz()">Crear Nuevo Kahoot!</button>
+                    <button class="btn-blue" style="font-size: 1.2rem; padding: 20px;" onclick="window.renderHostMenu('mine')">Ser Anfitrión (Jugar)</button>
+                    
+                    <div style="margin: 25px 0; color: #888; width: 100%; text-align: center; border-bottom: 2px solid #eee; line-height: 0.1em;"><span style="background:#fff; padding:0 15px; font-weight:bold; color:#aaa;">O UNIRSE</span></div>
+                    
+                    <input type="text" id="pinInput" placeholder="PIN del Juego" maxlength="6" style="font-size: 1.5rem; letter-spacing: 2px;">
+                    <input type="text" id="nameInput" placeholder="Tu Nombre" maxlength="12">
                     <button class="btn-black" onclick="window.joinGame()">Entrar</button>
                 </div>
             </div>
@@ -428,8 +556,8 @@
     // 2. CREATE QUIZ VIEW
     window.renderCreateQuiz = function() {
         if(currentUser.isAnonymous) {
-            alert("Los invitados no pueden crear Quizzes. Regístrate para guardar tus creaciones.");
-            return renderHome();
+            window.showConfirmModal("Los invitados no pueden crear Quizzes. ¿Quieres volver?", () => renderHome());
+            return;
         }
 
         builderQuestions = []; // Reset
@@ -441,55 +569,56 @@
     function updateBuilderUI() {
         let qListHtml = builderQuestions.map((q, idx) => `
             <div class="question-item">
-                <div class="flex" style="justify-content: space-between;">
-                    <strong>P${idx+1}: ${q.text}</strong>
-                    <button class="btn-red btn-small" onclick="window.removeBuilderQuestion(${idx})">X</button>
+                <div class="flex" style="justify-content: space-between; align-items:center;">
+                    <strong style="font-size:1.1rem;">${idx+1}. ${q.text}</strong>
+                    <button class="btn-red btn-icon" style="width:36px; height:36px;" onclick="window.removeBuilderQuestion(${idx})"><i class="fa-solid fa-trash"></i></button>
                 </div>
-                <div style="font-size: 0.8rem; color: #666;">Correcta: ${q.answers.find(a=>a.id === q.correct).text}</div>
+                <div style="font-size: 0.9rem; color: #666; margin-top:5px;">
+                    <i class="fa-solid fa-check" style="color:var(--green)"></i> ${q.answers.find(a=>a.id === q.correct).text}
+                </div>
             </div>
         `).join('');
 
         appDiv.innerHTML = `
-            <div class="creator-container">
-                <div class="flex center" style="margin-bottom: 20px;">
-                    <h2 style="margin:0;">Creador de Quiz</h2>
-                    <button class="btn-black btn-small" style="margin-left: auto;" onclick="window.renderHome()">Cancelar</button>
+            <div class="creator-container fade-in">
+                <div class="flex center" style="margin-bottom: 20px; justify-content: space-between;">
+                    <h2 style="margin:0; color:var(--purple); font-weight:900;">Creador</h2>
+                    <button class="btn-black btn-small" style="width: auto;" onclick="window.renderHome()">Cancelar</button>
                 </div>
 
-                <input type="text" id="quizTitle" placeholder="Título del Quiz" value="${builderTitle}" onchange="window.updateBuilderTitle(this.value)">
+                <input type="text" id="quizTitle" placeholder="Título del Kahoot" value="${builderTitle}" onchange="window.updateBuilderTitle(this.value)" style="font-size:1.5rem; text-align:left; border:none; border-bottom:2px solid #ccc; background:transparent; border-radius:0;">
 
                 <div style="margin: 20px 0;">
-                    <h3>Preguntas (${builderQuestions.length})</h3>
-                    ${qListHtml}
+                    ${builderQuestions.length > 0 ? qListHtml : '<div style="text-align:center; padding:40px; color:#aaa; font-style:italic;">Aún no hay preguntas</div>'}
                 </div>
 
-                <div class="card w-full" style="background: #eee; align-self: center;">
-                    <h4>Añadir Pregunta</h4>
-                    <input type="text" id="newQText" placeholder="¿Cuál es la pregunta?">
+                <div class="card w-full" style="background: white; align-self: center; border:1px solid #ddd; padding:20px;">
+                    <h4 style="margin-top:0;">Nueva Pregunta</h4>
+                    <input type="text" id="newQText" placeholder="Escribe tu pregunta aquí...">
                     
                     <div class="answer-input-group">
                         <div class="answer-input-wrapper bg-red" style="color:white">
                             <input type="radio" name="correctAnswer" value="r" class="radio-check" checked>
-                            <input type="text" id="ansR" placeholder="Respuesta Roja" style="margin:0; border:none;">
+                            <input type="text" id="ansR" placeholder="Respuesta Roja" style="margin:0; border:none; background:transparent; color:white; text-align:left; font-weight:normal;">
                         </div>
                         <div class="answer-input-wrapper bg-blue" style="color:white">
                             <input type="radio" name="correctAnswer" value="b" class="radio-check">
-                            <input type="text" id="ansB" placeholder="Respuesta Azul" style="margin:0; border:none;">
+                            <input type="text" id="ansB" placeholder="Respuesta Azul" style="margin:0; border:none; background:transparent; color:white; text-align:left; font-weight:normal;">
                         </div>
                         <div class="answer-input-wrapper bg-yellow" style="color:white">
                             <input type="radio" name="correctAnswer" value="y" class="radio-check">
-                            <input type="text" id="ansY" placeholder="Respuesta Amarilla" style="margin:0; border:none;">
+                            <input type="text" id="ansY" placeholder="Respuesta Amarilla" style="margin:0; border:none; background:transparent; color:white; text-align:left; font-weight:normal;">
                         </div>
                         <div class="answer-input-wrapper bg-green" style="color:white">
                             <input type="radio" name="correctAnswer" value="g" class="radio-check">
-                            <input type="text" id="ansG" placeholder="Respuesta Verde" style="margin:0; border:none;">
+                            <input type="text" id="ansG" placeholder="Respuesta Verde" style="margin:0; border:none; background:transparent; color:white; text-align:left; font-weight:normal;">
                         </div>
                     </div>
 
-                    <button class="btn-blue" onclick="window.addBuilderQuestion()">Añadir Pregunta</button>
+                    <button class="btn-blue" style="margin-top:20px;" onclick="window.addBuilderQuestion()">+ Añadir Pregunta</button>
                 </div>
 
-                <button class="btn-green" style="margin-top: 20px;" onclick="window.saveQuizToFirestore()">GUARDAR QUIZ</button>
+                <button class="btn-green" style="margin-top: 20px; padding:20px; font-size:1.2rem;" onclick="window.saveQuizToFirestore()">GUARDAR TODO</button>
             </div>
         `;
     }
@@ -552,26 +681,25 @@
         }
     };
 
-    // 3. HOST MENU (SELECT QUIZ - UPDATED WITH TABS)
+    // 3. HOST MENU (SELECT QUIZ)
     window.renderHostMenu = async function(tab = 'mine') {
         hostMenuTab = tab;
 
-        // Header and Tabs UI
         appDiv.innerHTML = `
-            <div class="flex flex-col center h-full">
-                <div class="logo" onclick="window.renderHome()">Kahoot!</div>
+            <div class="flex flex-col center h-full fade-in">
+                <div class="logo" onclick="window.renderHome()">Kahoo!</div>
                 
                 <div class="tab-container">
                     <div class="tab ${tab === 'mine' ? 'active' : ''}" onclick="window.renderHostMenu('mine')">Mis Kahoots</div>
                     <div class="tab ${tab === 'public' ? 'active' : ''}" onclick="window.renderHostMenu('public')">Comunidad</div>
                 </div>
 
-                <div class="w-full scroll-y flex-col center" id="quizListContainer" style="padding-bottom: 20px; flex:1;">
+                <div class="w-full scroll-y flex-col center" id="quizListContainer" style="padding-bottom: 20px; flex:1; width:100%;">
                     <div class="loader"></div>
                 </div>
                 
-                <div style="padding:10px;">
-                    <button class="btn-black" style="width: 200px;" onclick="window.renderHome()">Volver</button>
+                <div style="padding:20px; width:100%; display:flex; justify-content:center;">
+                    <button class="btn-black" style="max-width: 200px;" onclick="window.renderHome()">Volver</button>
                 </div>
             </div>
         `;
@@ -584,51 +712,46 @@
 
             if(tab === 'mine') {
                 if(currentUser.isAnonymous) {
-                     container.innerHTML = `<div class="text-center" style="color:white">Regístrate para ver tus quizzes.</div>`;
+                     container.innerHTML = `<div class="text-center" style="color:white; margin-top:40px; font-size:1.2rem;">Regístrate para ver tus quizzes.</div>`;
                      return;
                 }
-                // Fetch My Quizzes
                 q = query(collection(db, 'artifacts', appId, 'public', 'data', 'quizzes'), where("creatorId", "==", currentUser.uid));
             } else {
-                // Fetch Public Quizzes
                 q = query(collection(db, 'artifacts', appId, 'public', 'data', 'quizzes'), where("isPublic", "==", true));
             }
             
             const snapshot = await getDocs(q);
             quizzes = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
 
-            // Add Demo only in Public or both? Let's put in Public/Community
             if(tab === 'public') quizzes.unshift({id: 'demo', ...DEMO_QUIZ});
 
             if (quizzes.length === 0) {
-                container.innerHTML = `<div class="text-center" style="color:white; margin-top:20px;">No hay quizzes aquí todavía.</div>`;
+                container.innerHTML = `<div class="text-center" style="color:rgba(255,255,255,0.6); margin-top:40px; font-style:italic;">No se encontraron quizzes.</div>`;
                 return;
             }
 
             container.innerHTML = quizzes.map(qz => {
-                // Determine buttons based on tab
-                let buttons = `<button class="btn-blue btn-small" onclick='window.startHost(${JSON.stringify(qz.questions)})'>Jugar</button>`;
+                let buttons = `<button class="btn-blue btn-small" onclick='window.startHost(${JSON.stringify(qz.questions)})'>JUGAR</button>`;
                 
                 if (tab === 'mine' && qz.id !== 'demo') {
                     const iconClass = qz.isPublic ? 'fa-globe' : 'fa-lock';
-                    const iconColor = qz.isPublic ? '#26890c' : '#666'; // Green for public
-                    const nextState = !qz.isPublic;
+                    const iconColor = qz.isPublic ? '#26890c' : '#555'; 
                     
                     buttons = `
                         <div class="list-actions">
                             <button class="btn-red btn-icon" title="Borrar" onclick="window.deleteQuiz('${qz.id}')"><i class="fa-solid fa-trash"></i></button>
                             <button class="btn-black btn-icon" style="background:${iconColor}" title="${qz.isPublic ? 'Hacer Privado' : 'Hacer Público'}" onclick="window.togglePublic('${qz.id}', ${qz.isPublic})"><i class="fa-solid ${iconClass}"></i></button>
-                            <button class="btn-blue btn-small" onclick='window.startHost(${JSON.stringify(qz.questions)})'>Jugar</button>
+                            <button class="btn-blue btn-small" style="margin-left:8px;" onclick='window.startHost(${JSON.stringify(qz.questions)})'>JUGAR</button>
                         </div>
                     `;
                 }
 
                 return `
-                    <div class="card flex" style="justify-content: space-between; align-items: center; width: 90%; max-width:500px;">
-                        <div>
-                            <h3 style="margin:0;">${qz.title}</h3>
-                            <small>${qz.questions.length} preguntas</small>
-                            ${tab === 'public' && qz.id !== 'demo' ? '<br><small style="color:#666">De un usuario</small>' : ''}
+                    <div class="card flex" style="justify-content: space-between; align-items: center; width: 90%; max-width:600px; padding:20px;">
+                        <div style="text-align:left;">
+                            <h3 style="margin:0; font-size:1.2rem;">${qz.title}</h3>
+                            <div style="font-size:0.9rem; color:#666; margin-top:5px;">${qz.questions.length} preguntas</div>
+                            ${tab === 'public' && qz.id !== 'demo' ? '<div style="font-size:0.8rem; color:#888; margin-top:2px;">Creado por usuario</div>' : ''}
                         </div>
                         ${buttons}
                     </div>
@@ -644,74 +767,69 @@
     // --- ACTIONS FOR QUIZZES ---
     
     window.deleteQuiz = async (quizId) => {
-        if(!confirm("¿Seguro que quieres borrar este Kahoot?")) return;
-        try {
-            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', quizId));
-            window.renderHostMenu('mine'); // Refresh
-        } catch (e) {
-            alert("Error al borrar: " + e.message);
-        }
+        window.showConfirmModal("¿Seguro que quieres borrar este Kahoot para siempre?", async () => {
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', quizId));
+                window.renderHostMenu('mine'); 
+            } catch (e) {
+                alert("Error al borrar: " + e.message);
+            }
+        });
     };
 
     window.togglePublic = async (quizId, currentState) => {
-        const newState = !currentState;
         try {
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'quizzes', quizId), {
-                isPublic: newState
+                isPublic: !currentState
             });
-            window.renderHostMenu('mine'); // Refresh to show icon change
+            window.renderHostMenu('mine'); 
         } catch (e) {
             alert("Error al actualizar: " + e.message);
         }
     };
 
-    // Nueva función para cancelar la partida desde el lobby
     window.cancelGame = async () => {
-        if(!confirm("¿Quieres cancelar la partida y volver atrás?")) return;
+        window.showConfirmModal("¿Cancelar partida y volver al menú?", async () => {
+            if (gameUnsubscribe) gameUnsubscribe();
+            if (playersUnsubscribe) playersUnsubscribe();
 
-        // Desuscribirse de los cambios
-        if (gameUnsubscribe) gameUnsubscribe();
-        if (playersUnsubscribe) playersUnsubscribe();
-
-        // Borrar la partida creada para no dejar basura en la BD
-        if (currentGameId) {
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', currentGameId));
-            } catch (e) {
-                console.error("Error borrando partida cancelada:", e);
+            if (currentGameId) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', currentGameId));
+                } catch (e) { console.error(e); }
             }
-        }
-
-        // Volver al menú
-        window.renderHostMenu(hostMenuTab);
+            window.renderHostMenu(hostMenuTab);
+        });
     };
 
 
     // 4. LOBBY VIEW
     function renderLobby(isHost, pin, players = []) {
-        let playersHtml = players.map(p => `<div class="player-chip">${p.name}</div>`).join('');
+        let playersHtml = players.map(p => `<div class="player-chip fade-in">${p.name}</div>`).join('');
         
         let hostControls = `
-            <div class="flex" style="gap: 10px;">
-                <button class="btn-red" style="width: auto; margin: 0; padding: 10px 20px;" onclick="window.cancelGame()">Cancelar</button>
-                <button class="btn-black" style="width: auto; margin: 0; padding: 10px 30px;" onclick="window.launchGame()">Empezar</button>
+            <div class="flex" style="gap: 15px;">
+                <button class="btn-red" style="width: auto; padding: 12px 24px;" onclick="window.cancelGame()">Cancelar</button>
+                <button class="btn-black" style="width: auto; padding: 12px 30px;" onclick="window.launchGame()">EMPEZAR</button>
             </div>
         `;
 
         let content = `
-            <div class="flex flex-col h-full w-full">
+            <div class="flex flex-col h-full w-full fade-in">
                 <div class="lobby-header">
-                    <div style="color: var(--green); font-size: 1.2rem;">Únete en <strong>ansose-13.github.io/kahoot-/</strong></div>
+                    <div style="color: var(--black); font-size: 1.1rem; margin-bottom:5px;">Únete en <strong style="color:var(--green); font-size:1.3rem;">ansose-13.github.io/kahoot-/</strong></div>
                     <div class="pin-display">PIN: ${pin}</div>
                 </div>
                 
                 <div class="player-list flex-1">
-                    ${players.length === 0 ? '<div style="opacity:0.6">Esperando jugadores...</div>' : playersHtml}
+                    ${players.length === 0 ? '<div style="opacity:0.6; font-size:1.5rem; font-weight:bold; margin-top:50px;">Esperando a los jugadores...</div>' : playersHtml}
                 </div>
 
-                <div class="status-bar flex center" style="background: var(--purple); color: white; padding: 20px;">
-                    <div style="font-size: 1.5rem;">${players.length} Jugadores</div>
-                    ${isHost ? hostControls : '<div class="loader" style="width: 30px; height: 30px; border-width: 3px; margin: 0;"></div> <span style="margin-left:10px">Ya estás dentro!</span>'}
+                <div class="status-bar" style="height:80px;">
+                    <div style="font-size: 1.5rem; color:white; display:flex; align-items:center; gap:10px;">
+                        <i class="fa-solid fa-user"></i> ${players.length}
+                    </div>
+                    ${isHost ? hostControls : '<div style="display:flex; align-items:center; color:white; font-size:1.2rem; font-weight:bold;"><div class="loader" style="width: 30px; height: 30px; border-width: 3px; margin: 0 15px 0 0;"></div> ¡Ya estás dentro!</div>'}
                 </div>
             </div>
         `;
@@ -721,10 +839,10 @@
     // 5. QUESTION VIEWS
     function renderQuestionHost(question, timeRem, currentIdx, total) {
         let answersHtml = `
-            <div class="game-grid w-full" style="height: 50%;">
+            <div class="game-grid w-full" style="height: 45%;">
                 ${question.answers.map(a => `
                     <div class="host-answer-card bg-${a.color}">
-                        <i class="fa-solid fa-${a.icon === 'triangle' ? 'play' : a.icon} ${a.icon === 'triangle' ? 'fa-rotate-270' : ''}" style="margin-right: 15px;"></i>
+                        <i class="fa-solid fa-${a.icon === 'triangle' ? 'play' : a.icon} ${a.icon === 'triangle' ? 'fa-rotate-270' : ''}" style="margin-right: 15px; font-size:2rem;"></i>
                         ${a.text}
                     </div>
                 `).join('')}
@@ -732,10 +850,10 @@
         `;
 
         appDiv.innerHTML = `
-            <div class="flex flex-col h-full w-full center" style="justify-content: space-between;">
-                <div class="w-full flex" style="justify-content: space-between; padding: 10px;">
-                    <div class="card" style="width: auto; padding: 10px; font-weight: bold;">${currentIdx + 1}/${total}</div>
-                    <div class="card" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: var(--purple);">${timeRem}</div>
+            <div class="flex flex-col h-full w-full center fade-in" style="justify-content: space-between; padding-bottom:10px;">
+                <div class="w-full flex" style="justify-content: space-between; padding: 15px 25px;">
+                    <div style="background:rgba(0,0,0,0.3); color:white; padding:8px 15px; border-radius:20px; font-weight:bold;">${currentIdx + 1} de ${total}</div>
+                    <div style="width: 70px; height: 70px; background:white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: var(--purple); box-shadow:0 4px 10px rgba(0,0,0,0.2);">${timeRem}</div>
                 </div>
 
                 <div class="question-text">${question.text}</div>
@@ -746,7 +864,7 @@
 
     function renderQuestionPlayer() {
         appDiv.innerHTML = `
-            <div class="game-grid">
+            <div class="game-grid fade-in" style="padding:15px; height:100%;">
                 <button class="answer-btn bg-red shape-triangle" onclick="window.submitAnswer('r')"></button>
                 <button class="answer-btn bg-blue shape-diamond" onclick="window.submitAnswer('b')"></button>
                 <button class="answer-btn bg-yellow shape-circle" onclick="window.submitAnswer('y')"></button>
@@ -757,24 +875,29 @@
 
     function renderWaiting(msg = "Respuesta enviada") {
         appDiv.innerHTML = `
-            <div class="flex flex-col center h-full bg-purple">
-                <div class="loader"></div>
-                <h2 style="margin-top: 20px;">${msg}</h2>
-                <p>Espera al anfitrión...</p>
+            <div class="flex flex-col center h-full fade-in" style="background:var(--purple);">
+                <div class="loader" style="width:70px; height:70px; border-width:6px;"></div>
+                <h2 style="margin-top: 30px; font-size:2rem; text-transform:uppercase;">${msg}</h2>
+                <p style="font-size:1.2rem; opacity:0.8;">¿Estás nervioso?</p>
             </div>
         `;
     }
 
     function renderPlayerResult(isCorrect, score) {
+        const bgColor = isCorrect ? 'var(--green)' : 'var(--red)';
+        const icon = isCorrect ? 'fa-check' : 'fa-xmark';
+        const text = isCorrect ? '¡Correcto!' : '¡Incorrecto!';
+        
         appDiv.innerHTML = `
-            <div class="flex flex-col center h-full" style="background-color: ${isCorrect ? 'var(--green)' : 'var(--red)'}">
-                <div style="font-size: 5rem; margin-bottom: 20px;">
-                    <i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'}"></i>
+            <div class="flex flex-col center h-full fade-in" style="background-color: ${bgColor}">
+                <div style="background:rgba(255,255,255,0.2); width:120px; height:120px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom: 20px;">
+                    <i class="fa-solid ${icon}" style="font-size: 4rem;"></i>
                 </div>
-                <h1 style="font-size: 2.5rem;">${isCorrect ? 'Correcto' : 'Incorrecto'}</h1>
-                <div class="card" style="margin-top: 30px; text-align: center;">
-                    <p>Puntuación total</p>
-                    <h1>${score}</h1>
+                <h1 style="font-size: 3rem; text-transform:uppercase; margin:0;">${text}</h1>
+                
+                <div class="card" style="margin-top: 40px; text-align: center; background:rgba(0,0,0,0.3); color:white; border:none; box-shadow:none;">
+                    <p style="margin:0; text-transform:uppercase; font-size:0.9rem; opacity:0.8;">Puntuación total</p>
+                    <h1 style="margin:5px 0 0 0; font-size:3rem;">${score}</h1>
                 </div>
             </div>
         `;
@@ -783,17 +906,22 @@
     function renderScoreboard(players) {
         const sorted = [...players].sort((a, b) => b.score - a.score).slice(0, 5);
         appDiv.innerHTML = `
-            <div class="flex flex-col center h-full">
-                <h1 class="logo">Marcador</h1>
-                <div class="w-full" style="max-width: 600px; padding: 20px;">
+            <div class="flex flex-col center h-full fade-in">
+                <h1 class="logo" style="font-size:2.5rem; margin-bottom:10px;">Marcador</h1>
+                <div class="w-full scroll-y" style="max-width: 600px; padding: 20px; flex:1;">
                     ${sorted.map((p, i) => `
-                        <div class="card w-full flex" style="margin-bottom: 10px; justify-content: space-between;">
-                            <div><strong style="margin-right: 10px;">${i+1}.</strong> ${p.name}</div>
-                            <div>${p.score} pts</div>
+                        <div class="card w-full flex" style="margin-bottom: 10px; justify-content: space-between; align-items:center; padding:15px 20px;">
+                            <div style="display:flex; align-items:center;">
+                                <div style="background:var(--black); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:15px; font-weight:bold;">${i+1}</div>
+                                <strong style="font-size:1.2rem;">${p.name}</strong>
+                            </div>
+                            <div style="font-weight:bold; font-size:1.2rem;">${p.score}</div>
                         </div>
                     `).join('')}
                 </div>
-                <button class="btn-blue" style="width: 200px;" onclick="window.nextLevel()">Siguiente</button>
+                <div style="padding:20px;">
+                    <button class="btn-blue" style="width: 200px; font-size:1.2rem;" onclick="window.nextLevel()">Siguiente</button>
+                </div>
             </div>
         `;
     }
@@ -801,19 +929,39 @@
     function renderPodium(players) {
          const sorted = [...players].sort((a, b) => b.score - a.score);
          const winner = sorted[0] || {name: 'Nadie', score: 0};
+         const second = sorted[1] || {name: '-', score: 0};
+         const third = sorted[2] || {name: '-', score: 0};
+
          appDiv.innerHTML = `
-            <div class="flex flex-col center h-full">
-                <h1 class="logo">PODIO</h1>
-                <div style="display: flex; align-items: flex-end; gap: 10px; margin-bottom: 50px;">
-                    <div style="background: var(--blue); width: 80px; height: 100px; display: flex; justify-content: center; align-items: center; font-weight: bold;">2</div>
-                    <div style="background: var(--yellow); width: 100px; height: 150px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.5rem;">1</div>
-                    <div style="background: var(--white); color: black; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; font-weight: bold;">3</div>
+            <div class="flex flex-col center h-full fade-in">
+                <h1 class="logo" style="margin-bottom:10px;">PODIO</h1>
+                
+                <div style="display: flex; align-items: flex-end; gap: 15px; margin-bottom: 40px; height:250px;">
+                    <!-- 2nd Place -->
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div style="margin-bottom:10px; font-weight:bold; text-shadow:1px 1px 2px black;">${second.name}</div>
+                        <div style="background: var(--blue); width: 90px; height: 120px; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size:2rem; color:rgba(255,255,255,0.5); box-shadow: 4px 4px 0 rgba(0,0,0,0.3);">2</div>
+                    </div>
+                    
+                    <!-- 1st Place -->
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <i class="fa-solid fa-crown" style="color:gold; font-size:3rem; margin-bottom:10px; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.5));"></i>
+                        <div style="margin-bottom:10px; font-weight:bold; font-size:1.5rem; text-shadow:1px 1px 2px black;">${winner.name}</div>
+                        <div style="background: var(--yellow); width: 110px; height: 180px; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 3rem; color:white; text-shadow:2px 2px 0 rgba(0,0,0,0.2); box-shadow: 4px 4px 0 rgba(0,0,0,0.3);">1</div>
+                    </div>
+
+                    <!-- 3rd Place -->
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div style="margin-bottom:10px; font-weight:bold; text-shadow:1px 1px 2px black;">${third.name}</div>
+                        <div style="background: white; color: var(--black); width: 90px; height: 90px; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size:2rem; color:#ccc; box-shadow: 4px 4px 0 rgba(0,0,0,0.3);">3</div>
+                    </div>
                 </div>
-                <div class="card">
-                    <h2 class="text-center">Ganador: ${winner.name}</h2>
-                    <p class="text-center">${winner.score} puntos</p>
+
+                <div class="card" style="box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+                    <h2 class="text-center" style="margin:0; color:var(--purple);">¡Felicidades!</h2>
                 </div>
-                <button class="btn-black" style="width: 200px; margin-top: 20px;" onclick="window.renderHome()">Inicio</button>
+                
+                <button class="btn-black" style="width: 200px; margin-top: 20px;" onclick="window.renderHome()">Volver al Inicio</button>
             </div>
          `;
     }
@@ -823,7 +971,6 @@
     const getPlayersRef = (gameId) => collection(db, 'artifacts', appId, 'public', 'data', 'kahoot_games', gameId, 'players');
 
     // --- HOST LOGIC ---
-    
     window.startHost = async (selectedQuestions) => {
         if (!currentUser) return;
         currentRole = 'host';
@@ -874,7 +1021,7 @@
         const timerInterval = setInterval(async () => {
             timeLeft--;
             if (timeLeft >= 0) {
-                const timeDisplay = document.querySelector('.card[style*="border-radius: 50%"]');
+                const timeDisplay = document.querySelector('div[style*="border-radius: 50%"]');
                 if(timeDisplay) timeDisplay.innerText = timeLeft;
             } else {
                 clearInterval(timerInterval);
@@ -913,7 +1060,6 @@
     };
 
     // --- PLAYER LOGIC ---
-
     window.joinGame = async () => {
         const pin = document.getElementById('pinInput').value;
         const name = document.getElementById('nameInput').value;
@@ -971,7 +1117,7 @@
              }
         } else if (game.status === 'question_intro') {
             currentRole === 'host' ? 
-                appDiv.innerHTML = `<div class="flex flex-col center h-full"><div class="logo">¡Atentos!</div><div class="loader"></div></div>` : 
+                appDiv.innerHTML = `<div class="flex flex-col center h-full fade-in"><div class="logo">¡Atentos!</div><div class="loader"></div></div>` : 
                 renderWaiting("¡Prepárate!");
         } else if (game.status === 'question') {
             if (currentRole === 'player' && myData.lastQuestionIndex === game.currentQuestionIndex) {
